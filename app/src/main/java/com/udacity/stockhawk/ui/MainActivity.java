@@ -1,9 +1,6 @@
 package com.udacity.stockhawk.ui;
 
-import android.content.Context;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -23,25 +20,32 @@ import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
+import com.udacity.stockhawk.sync.StockAsyncTask;
+import com.udacity.stockhawk.utils.Utilities;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
+import yahoofinance.Stock;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener,
         StockAdapter.StockAdapterOnClickHandler {
 
     private static final int STOCK_LOADER = 0;
+
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
     RecyclerView stockRecyclerView;
+
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.swipe_refresh)
     SwipeRefreshLayout swipeRefreshLayout;
+
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.error)
     TextView error;
+
     private StockAdapter adapter;
 
     @Override
@@ -82,23 +86,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }).attachToRecyclerView(stockRecyclerView);
     }
 
-    private boolean networkUp() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnectedOrConnecting();
-    }
-
     @Override
     public void onRefresh() {
-
         QuoteSyncJob.syncImmediately(this);
 
-        if (!networkUp() && adapter.getItemCount() == 0) {
+        if (!Utilities.isNetworkUp(this) && adapter.getItemCount() == 0) {
             swipeRefreshLayout.setRefreshing(false);
             error.setText(getString(R.string.error_no_network));
             error.setVisibility(View.VISIBLE);
-        } else if (!networkUp()) {
+        } else if (!Utilities.isNetworkUp(this)) {
             swipeRefreshLayout.setRefreshing(false);
             Toast.makeText(this, R.string.toast_no_connectivity, Toast.LENGTH_LONG).show();
         } else if (PrefUtils.getStocks(this).size() == 0) {
@@ -114,18 +110,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         new AddStockDialog().show(getFragmentManager(), "StockDialogFragment");
     }
 
-    void addStock(String symbol) {
+    void addStock(final String symbol) {
         if (symbol != null && !symbol.isEmpty()) {
-
-            if (networkUp()) {
+            if (Utilities.isNetworkUp(this)) {
                 swipeRefreshLayout.setRefreshing(true);
+
+                StockAsyncTask stockAsyncTask = new StockAsyncTask();
+                stockAsyncTask.setCallback(new StockAsyncTask.Callback() {
+                    @Override
+                    public void block(Stock stock) {
+                        swipeRefreshLayout.setRefreshing(false);
+                        if (stock != null) {
+                            PrefUtils.addStock(MainActivity.this, symbol);
+                            QuoteSyncJob.syncImmediately(MainActivity.this);
+                        } else {
+                            Toast.makeText(MainActivity.this, R.string.toast_stock_failed_find, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+                stockAsyncTask.execute(symbol);
             } else {
                 String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
-
-            PrefUtils.addStock(this, symbol);
-            QuoteSyncJob.syncImmediately(this);
         }
     }
 
@@ -144,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (data.getCount() != 0) {
             error.setVisibility(View.GONE);
         }
+
         adapter.setCursor(data);
     }
 
@@ -154,8 +162,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void setDisplayModeMenuItemIcon(MenuItem item) {
-        if (PrefUtils.getDisplayMode(this)
-                .equals(getString(R.string.pref_display_mode_absolute_key))) {
+        if (PrefUtils.getDisplayMode(this).equals(getString(R.string.pref_display_mode_absolute_key))) {
             item.setIcon(R.drawable.ic_percentage);
         } else {
             item.setIcon(R.drawable.ic_dollar);
@@ -180,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             adapter.notifyDataSetChanged();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 

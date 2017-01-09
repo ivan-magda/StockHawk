@@ -20,7 +20,7 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
+public final class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
     private final Context context;
     private final DecimalFormat dollarFormatWithPlus;
@@ -87,13 +87,8 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
     @Override
     public int getItemCount() {
-        int count = 0;
-        if (cursor != null) {
-            count = cursor.getCount();
-        }
-        return count;
+        return (cursor != null ? cursor.getCount() : 0);
     }
-
 
     interface StockAdapterOnClickHandler {
         void onClick(String symbol);
@@ -123,7 +118,6 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
             int symbolColumn = cursor.getColumnIndex(Contract.Quote.COLUMN_SYMBOL);
             clickHandler.onClick(cursor.getString(symbolColumn));
         }
-
     }
 
 }

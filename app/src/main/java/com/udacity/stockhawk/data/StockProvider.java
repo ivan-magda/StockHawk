@@ -35,7 +35,8 @@ public class StockProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
+                        String[] selectionArgs, String sortOrder) {
         Cursor returnCursor;
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -112,7 +113,7 @@ public class StockProvider extends ContentProvider {
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rowsDeleted;
 
-        if (null == selection) {
+        if (selection == null) {
             selection = "1";
         }
 
