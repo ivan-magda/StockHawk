@@ -32,5 +32,7 @@
     <string name="a11y_add_new_stock">Add new stock</string>
     <string name="a11y_change_by_price">Show change by price</string>
     <string name="a11y_change_by_percentage">Show change by percentage</string>
+    <string name="title_widget_detail">StockHawk Details</string>
+    <string name="empty_stocks_list">No Stocks Information Available</string>
 
 </resources>
