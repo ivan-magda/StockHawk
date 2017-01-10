@@ -1,5 +1,6 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -47,11 +48,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     TextView error;
 
     private StockAdapter adapter;
-
-    @Override
-    public void onClick(String symbol) {
-        Timber.d("Symbol clicked: %s", symbol);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +100,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         } else {
             error.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public void onClick(String symbol) {
+        Timber.d("Symbol clicked: %s", symbol);
+        Intent intent = new Intent(this, StockDetailActivity.class);
+        intent.putExtra(StockDetailActivity.EXTRA_SYMBOL_TRANSFER, symbol);
+        startActivity(intent);
     }
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
@@ -164,8 +168,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void setDisplayModeMenuItemIcon(MenuItem item) {
         if (PrefUtils.getDisplayMode(this).equals(getString(R.string.pref_display_mode_absolute_key))) {
             item.setIcon(R.drawable.ic_percentage);
+            //  method setTitle(CharSequence title) also sets setContentDescription(title)
+            //  from the ActionMenuItemView.java class in Android internal source code.
+            item.setTitle(R.string.a11y_change_by_price);
         } else {
             item.setIcon(R.drawable.ic_dollar);
+            item.setTitle(R.string.a11y_change_by_percentage);
         }
     }
 
