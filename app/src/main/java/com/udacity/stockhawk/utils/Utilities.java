@@ -8,6 +8,7 @@ import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
 import com.google.common.collect.Lists;
+import com.udacity.stockhawk.data.PrefUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -16,10 +17,22 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public final class Utilities {
 
     private Utilities() {
+    }
+
+    public static boolean isUniqueSymbolName(@NonNull final Context context, @NonNull final String symbol) {
+        Set<String> stocks = PrefUtils.getStocks(context);
+        if (stocks != null && stocks.size() > 0) {
+            final String symbolUppercase = symbol.toUpperCase();
+            for (String stock : stocks) {
+                if (symbolUppercase.equals(stock.toUpperCase())) return false;
+            }
+        }
+        return true;
     }
 
     public static boolean isNetworkUp(@NonNull final Context context) {

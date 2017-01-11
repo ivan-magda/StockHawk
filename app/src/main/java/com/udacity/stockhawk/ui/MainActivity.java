@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -115,29 +116,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     void addStock(final String symbol) {
-        if (symbol != null && !symbol.isEmpty()) {
-            if (Utilities.isNetworkUp(this)) {
-                swipeRefreshLayout.setRefreshing(true);
-
-                StockAsyncTask stockAsyncTask = new StockAsyncTask();
-                stockAsyncTask.setCallback(new StockAsyncTask.Callback() {
-                    @Override
-                    public void block(Stock stock) {
-                        swipeRefreshLayout.setRefreshing(false);
-                        if (stock != null) {
-                            PrefUtils.addStock(MainActivity.this, symbol);
-                            QuoteSyncJob.syncImmediately(MainActivity.this);
-                        } else {
-                            Toast.makeText(MainActivity.this, R.string.toast_stock_failed_find, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-                stockAsyncTask.execute(symbol);
-            } else {
-                String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-            }
+        if (TextUtils.isEmpty(symbol)) {
+            Toast.makeText(this, R.string.toast_failed_stock_empty, Toast.LENGTH_SHORT).show();
+            return;
         }
+        if (!Utilities.isUniqueSymbolName(this, symbol)) {
+            Toast.makeText(this, R.string.toast_stock_failed_no_unique, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!Utilities.isNetworkUp(this)) {
+            Toast.makeText(this, getString(R.string.toast_stock_added_no_connectivity, symbol), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        swipeRefreshLayout.setRefreshing(true);
+
+        StockAsyncTask stockAsyncTask = new StockAsyncTask();
+        stockAsyncTask.setCallback(new StockAsyncTask.Callback() {
+            @Override
+            public void block(Stock stock) {
+                swipeRefreshLayout.setRefreshing(false);
+                if (stock != null) {
+                    PrefUtils.addStock(MainActivity.this, symbol);
+                    QuoteSyncJob.syncImmediately(MainActivity.this);
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.toast_stock_failed_find, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        stockAsyncTask.execute(symbol);
     }
 
     @Override

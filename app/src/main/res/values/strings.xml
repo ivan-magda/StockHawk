@@ -27,11 +27,14 @@
     <string name="toast_stock_added_no_connectivity">Symbol %s added. Will refresh when network available.</string>
     <string name="toast_no_connectivity">Will refresh when network available.</string>
     <string name="toast_stock_failed_find">Could not find stock for this name</string>
+    <string name="toast_failed_stock_empty">Please enter the symbol name</string>
+    <string name="toast_stock_failed_no_unique">You are already have stock for this name</string>
 
     <!-- A11y -->
     <string name="a11y_add_new_stock">Add new stock</string>
     <string name="a11y_change_by_price">Show change by price</string>
     <string name="a11y_change_by_percentage">Show change by percentage</string>
+
     <string name="title_widget_detail">StockHawk Details</string>
     <string name="empty_stocks_list">No Stocks Information Available</string>
 
