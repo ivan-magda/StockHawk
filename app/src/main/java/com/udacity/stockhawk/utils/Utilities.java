@@ -54,7 +54,7 @@ public final class Utilities {
 
         mappedHistory = Lists.reverse(mappedHistory);
         LinkedHashMap<String, List<Float>> hashMapByMonth = new LinkedHashMap<>(mappedHistory.size() / 2);
-        DateFormat dateFormat = new SimpleDateFormat("MMM YY", Locale.getDefault());
+        DateFormat dateFormat = new SimpleDateFormat("MMM yy", Locale.getDefault());
 
         for (Pair<Date, Float> pair : mappedHistory) {
             String key = dateFormat.format(pair.first);
